@@ -108,8 +108,8 @@ def predict_rating_matrix(ratings, item_similarity_matrix):
 
 
 # 计算物品相似度矩阵
-# item_similarity_matrix = calculate_similarity_matrix(ratings, similarity_func=cosine_similarity)
-item_similarity_matrix = calculate_similarity_matrix(ratings, similarity_func=adjusted_cosine_similarity)
+item_similarity_matrix = calculate_similarity_matrix(ratings, similarity_func=cosine_similarity)
+# item_similarity_matrix = calculate_similarity_matrix(ratings, similarity_func=adjusted_cosine_similarity)
 # print("物品相似度矩阵:")
 # print(item_similarity_matrix)
 
@@ -124,13 +124,18 @@ predicted_ratings_matrix = predict_rating_matrix(ratings, item_similarity_matrix
 item_labels = [f'电影{i+1}' for i in range(6)]  # 假设有6部电影
 user_labels = ['用户A', '用户B', '用户C', '用户D', '用户E', '用户F']  # 用户标签
 
-# 将NumPy矩阵转换为DataFrame
-item_similarity_df = pd.DataFrame(item_similarity_matrix, index=item_labels, columns=item_labels)
-predicted_ratings_df = pd.DataFrame(predicted_ratings_matrix, index=user_labels, columns=item_labels)
+# 创建一个Excel文件写入器
+with pd.ExcelWriter('hw1-2.xlsx', engine='openpyxl') as writer:
+    # 将物品相似度矩阵转换为DataFrame并保存到Excel
+    item_similarity_df = pd.DataFrame(item_similarity_matrix, index=item_labels, columns=item_labels)
+    item_similarity_df.to_excel(writer, sheet_name='Item_Similarity', index=True, header=True)
+    
+    # 在物品相似度矩阵后添加三行空白行
+    for _ in range(3):
+        writer.sheets['Item_Similarity'].append([np.nan] * len(item_labels))
 
-# 保存到Excel文件
-excel_file = 'output.xlsx'
-item_similarity_df.to_excel(excel_file, sheet_name='Item_Similarity', index=True, header=True)
-predicted_ratings_df.to_excel(excel_file, sheet_name='Predicted_Rating', index=True, header=True)
+    # 将预测评分矩阵转换为DataFrame并保存到Excel
+    predicted_ratings_df = pd.DataFrame(predicted_ratings_matrix, index=user_labels, columns=item_labels)
+    predicted_ratings_df.to_excel(writer, sheet_name='Predicted_Rating', index=True, header=True)
 
-print(f"Excel files have been saved to '{excel_file}'.")
+print(f"Excel files have been saved to 'output_with_spaces.xlsx' with item similarity matrix and predicted rating matrix separated by three blank lines.")
